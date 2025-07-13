@@ -1,3 +1,6 @@
+server:
+  port: 9000
+
 spring:
   application:
     name: auth-service
@@ -19,10 +22,16 @@ logging:
     org:
       springframework:
         data: warn
-        security: warn
+        security: trace
       hibernate: warn
     root: warn
+    org.springframework.security.web.FilterChainProxy: trace
 
 jwt:
   secret: vcNreNuHt307dFou/OD1Uc3w97+sLcJpi0nBsWbNK5czapXowy++EDOBbJ6AVBj1e+CxDL4d2M8YZlV5KNu2UA==
   expiration-ms: 86400000
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
