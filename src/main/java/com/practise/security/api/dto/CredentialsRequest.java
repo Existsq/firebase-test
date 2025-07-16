@@ -3,7 +3,7 @@ package com.practise.security.api.dto;
 import lombok.Data;
 
 @Data
-public class RegistrationRequest {
+public class CredentialsRequest {
   private String email;
   private String password;
 }

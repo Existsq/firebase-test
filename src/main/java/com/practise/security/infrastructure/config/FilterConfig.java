@@ -4,6 +4,7 @@ import com.practise.security.infrastructure.security.filter.JsonUsernamePassword
 import com.practise.security.infrastructure.security.filter.JwtAuthenticationFilter;
 import com.practise.security.infrastructure.security.handler.RestAuthenticationFailureHandler;
 import com.practise.security.infrastructure.security.handler.RestAuthenticationSuccessHandler;
+import com.practise.security.infrastructure.security.jwt.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,10 +17,11 @@ public class FilterConfig {
   private final AuthenticationManager authenticationManager;
   private final RestAuthenticationSuccessHandler successHandler;
   private final RestAuthenticationFailureHandler failureHandler;
+  private final JwtService jwtService;
 
   @Bean
   public JwtAuthenticationFilter jwtAuthenticationFilter() {
-    return new JwtAuthenticationFilter(authenticationManager);
+    return new JwtAuthenticationFilter(jwtService);
   }
 
   @Bean

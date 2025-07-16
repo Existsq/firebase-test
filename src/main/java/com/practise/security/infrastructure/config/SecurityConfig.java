@@ -27,7 +27,17 @@ public class SecurityConfig {
 
   @Bean
   public SecurityFilterChain publicSecurityFilterChain(HttpSecurity http) throws Exception {
-    http.securityMatcher("/login", "/register", "/csrf")
+    http.authorizeHttpRequests(
+            authorize ->
+                authorize
+                    .requestMatchers("/login", "/register", "/csrf")
+                    .permitAll()
+                    .requestMatchers("/secured/cards")
+                    .hasRole("USER")
+                    .requestMatchers("/secured/subscribed/**")
+                    .hasRole("SUB")
+                    .anyRequest()
+                    .authenticated())
         .csrf(
             csrf ->
                 csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
@@ -37,28 +47,8 @@ public class SecurityConfig {
         .httpBasic(AbstractHttpConfigurer::disable)
         .formLogin(AbstractHttpConfigurer::disable)
         .logout(AbstractHttpConfigurer::disable)
-        .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
-        .addFilterAfter(jsonUsernamePasswordAuthFilter, UsernamePasswordAuthenticationFilter.class)
-        .sessionManagement(
-            session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .exceptionHandling(
-            ex ->
-                ex.authenticationEntryPoint(restAuthenticationEntryPoint)
-                    .accessDeniedHandler(restAccessDeniedHandler));
-    return http.build();
-  }
-
-  @Bean
-  public SecurityFilterChain securedSecurityFilterChain(HttpSecurity http) throws Exception {
-    http.securityMatcher("/secured/**")
-        .csrf(AbstractHttpConfigurer::disable)
-        .anonymous(AbstractHttpConfigurer::disable)
-        .requestCache(RequestCacheConfigurer::disable)
-        .httpBasic(AbstractHttpConfigurer::disable)
-        .formLogin(AbstractHttpConfigurer::disable)
-        .logout(AbstractHttpConfigurer::disable)
-        .authorizeHttpRequests(auth -> auth.anyRequest().hasRole("ADMIN"))
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+        .addFilterAfter(jsonUsernamePasswordAuthFilter, UsernamePasswordAuthenticationFilter.class)
         .sessionManagement(
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .exceptionHandling(

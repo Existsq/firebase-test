@@ -1,27 +1,29 @@
 package com.practise.security.infrastructure.security.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.practise.security.api.dto.LoginRequest;
+import com.practise.security.api.dto.CredentialsRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 
-// Данный фильтр отвечает за аутентификацию пользователя по предоставленному логину и паролю
+// Данный фильтр отвечает за аутентификацию пользователя
+// по предоставленному логину и паролю из тела запроса
 @Slf4j
 public class JsonUsernamePasswordAuthFilter extends AbstractAuthenticationProcessingFilter {
 
   private final ObjectMapper objectMapper = new ObjectMapper();
 
   public JsonUsernamePasswordAuthFilter() {
-    super(new AntPathRequestMatcher("/login", "POST"));
+    super(PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST, "/login"));
   }
 
   @Override
@@ -34,11 +36,11 @@ public class JsonUsernamePasswordAuthFilter extends AbstractAuthenticationProces
       throw new AuthenticationServiceException("Content type not supported");
     }
 
-    LoginRequest loginRequest =
-        objectMapper.readValue(request.getInputStream(), LoginRequest.class);
+    CredentialsRequest credentialsRequest =
+        objectMapper.readValue(request.getInputStream(), CredentialsRequest.class);
 
-    String username = loginRequest.getEmail();
-    String password = loginRequest.getPassword();
+    String username = credentialsRequest.getEmail();
+    String password = credentialsRequest.getPassword();
 
     log.debug("Attempting authentication for user: {}", username);
 

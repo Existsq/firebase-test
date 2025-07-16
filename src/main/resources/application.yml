@@ -19,13 +19,14 @@ spring:
 
 logging:
   level:
-    org:
-      springframework:
-        data: warn
-        security: trace
-      hibernate: warn
-    root: warn
-    org.springframework.security.web.FilterChainProxy: trace
+    root: error
+#    org.springframework.security: trace
+    com.practise.security.infrastructure.security.filter.JwtAuthenticationFilter: trace
+    com.practise.security.infrastructure.security.filter.JsonUsernamePasswordAuthFilter: trace
+    com.practise.security.domain.service.AuthService: trace
+
+  file:
+    path: ./security/logs/auth-service.log
 
 jwt:
   secret: vcNreNuHt307dFou/OD1Uc3w97+sLcJpi0nBsWbNK5czapXowy++EDOBbJ6AVBj1e+CxDL4d2M8YZlV5KNu2UA==

@@ -1,6 +1,6 @@
 package com.practise.security.api.controller;
 
-import com.practise.security.api.dto.RegistrationRequest;
+import com.practise.security.api.dto.CredentialsRequest;
 import com.practise.security.domain.service.AuthService;
 import com.practise.security.infrastructure.security.jwt.JwtToken;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +18,7 @@ public class AuthController {
   private final AuthService authService;
 
   @PostMapping("/register")
-  public ResponseEntity<?> register(@RequestBody RegistrationRequest request) {
+  public ResponseEntity<?> register(@RequestBody CredentialsRequest request) {
     JwtToken token = authService.register(request);
     return ResponseEntity.ok(token);
   }

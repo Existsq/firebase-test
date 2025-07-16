@@ -1,8 +1,8 @@
 package com.practise.security.infrastructure.security.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.practise.security.api.dto.AuthSuccessResponse;
 import com.practise.security.infrastructure.security.jwt.JwtService;
+import com.practise.security.infrastructure.security.jwt.JwtToken;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -26,12 +26,11 @@ public class RestAuthenticationSuccessHandler implements AuthenticationSuccessHa
       throws IOException {
 
     UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-    String token = jwtService.generateToken(userDetails);
 
-    AuthSuccessResponse successResponse = new AuthSuccessResponse(token);
+    JwtToken token = new JwtToken(jwtService.generateToken(userDetails));
 
     response.setStatus(HttpServletResponse.SC_OK);
     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-    objectMapper.writeValue(response.getWriter(), successResponse);
+    objectMapper.writeValue(response.getWriter(), token);
   }
 }

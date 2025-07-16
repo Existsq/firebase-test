@@ -1,9 +1,11 @@
 package com.practise.security.domain.model;
 
 import jakarta.persistence.*;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.security.core.CredentialsContainer;
 import org.springframework.security.core.GrantedAuthority;
@@ -13,6 +15,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 @Table(name = "users")
 @Getter
 @Setter
+@NoArgsConstructor
 public class AuthUser implements UserDetails, CredentialsContainer {
 
   @Id
@@ -25,29 +28,35 @@ public class AuthUser implements UserDetails, CredentialsContainer {
 
   private boolean enabled = true;
 
-  //  @ElementCollection(fetch = FetchType.EAGER)
-  //  private List<String> roles = List.of("USER");
+  @ManyToMany(fetch = FetchType.EAGER)
+  @JoinTable(
+      name = "user_roles",
+      joinColumns = @JoinColumn(name = "user_id"),
+      inverseJoinColumns = @JoinColumn(name = "role_id"))
+  private List<Role> roles = new ArrayList<>();
 
   public AuthUser(String email) {
     this.email = email;
   }
 
-  public AuthUser() {}
-
-  @Override
-  public Collection<? extends GrantedAuthority> getAuthorities() {
-    //    return roles.stream().map(role -> (GrantedAuthority) () -> "ROLE_" + role).toList();
-    return List.of(() -> "ROLE_ADMIN");
+  public AuthUser(String email, Collection<Role> roles) {
+    this.email = email;
+    this.roles = new ArrayList<>(roles);
   }
 
   @Override
-  public String getPassword() {
-    return password;
+  public Collection<? extends GrantedAuthority> getAuthorities() {
+    return roles;
   }
 
   @Override
   public String getUsername() {
     return email;
+  }
+
+  @Override
+  public String getPassword() {
+    return password;
   }
 
   @Override

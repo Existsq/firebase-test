@@ -1,15 +1,19 @@
 package com.practise.security.infrastructure.security.jwt;
 
 import com.practise.security.domain.model.AuthUser;
+import com.practise.security.domain.model.Role;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import javax.crypto.SecretKey;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -32,18 +36,6 @@ public class JwtService {
   public String extractUsername(JwtToken token) {
     log.trace("Extracting username from token");
     return extractClaim(token, Claims::getSubject);
-  }
-
-  public boolean isTokenValid(JwtToken token, UserDetails userDetails) {
-    try {
-      final String username = extractUsername(token);
-      boolean valid = username.equals(userDetails.getUsername()) && !isTokenExpired(token);
-      log.trace("Token validity for user {}: {}", username, valid);
-      return valid;
-    } catch (Exception e) {
-      log.warn("Token validation failed: {}", e.getMessage());
-      return false;
-    }
   }
 
   public boolean isTokenValid(JwtToken token) {
@@ -83,17 +75,37 @@ public class JwtService {
 
   public String generateToken(UserDetails userDetails) {
     log.trace("Generating JWT token for user {}", userDetails.getUsername());
+    List<String> roles =
+        userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
+
     return Jwts.builder()
         .subject(userDetails.getUsername())
+        .claim("roles", roles)
         .issuedAt(new Date())
         .expiration(new Date(System.currentTimeMillis() + expiration))
         .signWith(secretKey)
         .compact();
   }
 
+  public List<String> extractRoles(JwtToken token) {
+    Claims claims = extractAllClaims(token);
+    Object raw = claims.get("roles");
+
+    if (raw instanceof List<?>) {
+      return ((List<?>) raw)
+          .stream().filter(item -> item instanceof String).map(Object::toString).toList();
+    }
+    return List.of();
+  }
+
   public UserDetails extractUserDetails(JwtToken token) {
     String username = extractUsername(token);
-    log.trace("Extracted user details from token: {}", username);
-    return new AuthUser(username);
+    List<String> roleNames = extractRoles(token);
+
+    List<Role> roles = roleNames.stream().map(Role::new).collect(Collectors.toList());
+
+    log.trace("Extracted user {} with roles {}", username, roleNames);
+
+    return new AuthUser(username, roles);
   }
 }
